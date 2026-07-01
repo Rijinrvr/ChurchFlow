@@ -290,8 +290,25 @@ export const members: Member[] = families.flatMap((f) => f.members)
 // TRANSACTIONS
 // ============================================
 
+// Seeded PRNG (mulberry32) — deterministic on both server and client.
+// This prevents hydration mismatches caused by Math.random() returning
+// different values during SSR vs client-side rendering.
+function createSeededRandom(seed: number) {
+  let s = seed >>> 0
+  return function () {
+    s += 0x6d2b79f5
+    let t = s
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+// Fixed seed — change this number to regenerate a different (but still stable) dataset.
+const seededRandom = createSeededRandom(0xdeadbeef)
+
 function randomDate(start: Date, end: Date): string {
-  const d = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
+  const d = new Date(start.getTime() + seededRandom() * (end.getTime() - start.getTime()))
   return d.toISOString().split("T")[0]
 }
 
@@ -308,7 +325,7 @@ function generateTransactions(): Transaction[] {
   // Generate monthly contributions for most families
   for (let month = 0; month < 12; month++) {
     const monthDate = new Date(now.getFullYear(), now.getMonth() - 11 + month, 1)
-    const familiesForMonth = families.slice(0, 20 + Math.floor(Math.random() * 10))
+    const familiesForMonth = families.slice(0, 20 + Math.floor(seededRandom() * 10))
     
     for (const family of familiesForMonth) {
       const head = family.members[0]
@@ -328,9 +345,9 @@ function generateTransactions(): Transaction[] {
         memberId: head.id,
         memberName: head.name,
         description: "Monthly Contribution (Masavari)",
-        amount: [100, 150, 200, 250, 300, 500][Math.floor(Math.random() * 6)],
-        paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-        collectedBy: collectors[Math.floor(Math.random() * collectors.length)],
+        amount: [100, 150, 200, 250, 300, 500][Math.floor(seededRandom() * 6)],
+        paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
+        collectedBy: collectors[Math.floor(seededRandom() * collectors.length)],
         type: "income",
       })
     }
@@ -338,7 +355,7 @@ function generateTransactions(): Transaction[] {
 
   // Generate birthday contributions
   for (let i = 0; i < 25; i++) {
-    const member = members[Math.floor(Math.random() * members.length)]
+    const member = members[Math.floor(seededRandom() * members.length)]
     const family = families.find((f) => f.id === member.familyId)!
     receiptCounter++
     transactions.push({
@@ -352,16 +369,16 @@ function generateTransactions(): Transaction[] {
       memberId: member.id,
       memberName: member.name,
       description: `Birthday offering - ${member.name}`,
-      amount: [200, 300, 500, 1000, 1500][Math.floor(Math.random() * 5)],
-      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-      collectedBy: collectors[Math.floor(Math.random() * collectors.length)],
+      amount: [200, 300, 500, 1000, 1500][Math.floor(seededRandom() * 5)],
+      paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
+      collectedBy: collectors[Math.floor(seededRandom() * collectors.length)],
       type: "income",
     })
   }
 
   // Generate wedding anniversary contributions
   for (let i = 0; i < 15; i++) {
-    const family = families[Math.floor(Math.random() * families.length)]
+    const family = families[Math.floor(seededRandom() * families.length)]
     const head = family.members[0]
     if (!head) continue
     receiptCounter++
@@ -376,16 +393,16 @@ function generateTransactions(): Transaction[] {
       memberId: head.id,
       memberName: head.name,
       description: `Wedding Anniversary offering`,
-      amount: [500, 1000, 1500, 2000][Math.floor(Math.random() * 4)],
-      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-      collectedBy: collectors[Math.floor(Math.random() * collectors.length)],
+      amount: [500, 1000, 1500, 2000][Math.floor(seededRandom() * 4)],
+      paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
+      collectedBy: collectors[Math.floor(seededRandom() * collectors.length)],
       type: "income",
     })
   }
 
   // Generate new project contributions
   for (let i = 0; i < 20; i++) {
-    const family = families[Math.floor(Math.random() * families.length)]
+    const family = families[Math.floor(seededRandom() * families.length)]
     const head = family.members[0]
     if (!head) continue
     receiptCounter++
@@ -400,16 +417,16 @@ function generateTransactions(): Transaction[] {
       memberId: head.id,
       memberName: head.name,
       description: "New Church Building Fund",
-      amount: [1000, 2000, 5000, 10000, 25000][Math.floor(Math.random() * 5)],
-      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-      collectedBy: collectors[Math.floor(Math.random() * collectors.length)],
+      amount: [1000, 2000, 5000, 10000, 25000][Math.floor(seededRandom() * 5)],
+      paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
+      collectedBy: collectors[Math.floor(seededRandom() * collectors.length)],
       type: "income",
     })
   }
 
   // Generate donations
   for (let i = 0; i < 18; i++) {
-    const member = members[Math.floor(Math.random() * members.length)]
+    const member = members[Math.floor(seededRandom() * members.length)]
     const family = families.find((f) => f.id === member.familyId)!
     receiptCounter++
     transactions.push({
@@ -423,16 +440,16 @@ function generateTransactions(): Transaction[] {
       memberId: member.id,
       memberName: member.name,
       description: "General Donation",
-      amount: [500, 1000, 2000, 5000][Math.floor(Math.random() * 4)],
-      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-      collectedBy: collectors[Math.floor(Math.random() * collectors.length)],
+      amount: [500, 1000, 2000, 5000][Math.floor(seededRandom() * 4)],
+      paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
+      collectedBy: collectors[Math.floor(seededRandom() * collectors.length)],
       type: "income",
     })
   }
 
   // Generate thanksgiving
   for (let i = 0; i < 10; i++) {
-    const member = members[Math.floor(Math.random() * members.length)]
+    const member = members[Math.floor(seededRandom() * members.length)]
     const family = families.find((f) => f.id === member.familyId)!
     receiptCounter++
     transactions.push({
@@ -446,16 +463,16 @@ function generateTransactions(): Transaction[] {
       memberId: member.id,
       memberName: member.name,
       description: "Thanksgiving Offering",
-      amount: [1000, 2000, 3000, 5000][Math.floor(Math.random() * 4)],
-      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-      collectedBy: collectors[Math.floor(Math.random() * collectors.length)],
+      amount: [1000, 2000, 3000, 5000][Math.floor(seededRandom() * 4)],
+      paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
+      collectedBy: collectors[Math.floor(seededRandom() * collectors.length)],
       type: "income",
     })
   }
 
   // Generate special offerings
   for (let i = 0; i < 8; i++) {
-    const member = members[Math.floor(Math.random() * members.length)]
+    const member = members[Math.floor(seededRandom() * members.length)]
     const family = families.find((f) => f.id === member.familyId)!
     receiptCounter++
     transactions.push({
@@ -469,9 +486,9 @@ function generateTransactions(): Transaction[] {
       memberId: member.id,
       memberName: member.name,
       description: "Special Offering",
-      amount: [500, 1000, 2500, 5000][Math.floor(Math.random() * 4)],
-      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-      collectedBy: collectors[Math.floor(Math.random() * collectors.length)],
+      amount: [500, 1000, 2500, 5000][Math.floor(seededRandom() * 4)],
+      paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
+      collectedBy: collectors[Math.floor(seededRandom() * collectors.length)],
       type: "income",
     })
   }
@@ -493,9 +510,9 @@ function generateTransactions(): Transaction[] {
       familyNo: 0,
       houseName: "",
       memberName: "Church Admin",
-      description: expenseDescriptions[Math.floor(Math.random() * expenseDescriptions.length)],
-      amount: [500, 1000, 2000, 3000, 5000, 8000, 10000, 15000][Math.floor(Math.random() * 8)],
-      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+      description: expenseDescriptions[Math.floor(seededRandom() * expenseDescriptions.length)],
+      amount: [500, 1000, 2000, 3000, 5000, 8000, 10000, 15000][Math.floor(seededRandom() * 8)],
+      paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
       collectedBy: "Admin",
       type: "expense",
     })
@@ -508,7 +525,7 @@ function generateTransactions(): Transaction[] {
     const head = family.members[0]
     if (!head) continue
     receiptCounter++
-    const cat = categories[Math.floor(Math.random() * 5)]
+    const cat = categories[Math.floor(seededRandom() * 5)]
     transactions.push({
       id: `t-today-${family.id}`,
       date: today,
@@ -520,9 +537,9 @@ function generateTransactions(): Transaction[] {
       memberId: head.id,
       memberName: head.name,
       description: `${cat.charAt(0).toUpperCase() + cat.slice(1)} contribution`,
-      amount: [500, 1000, 2000][Math.floor(Math.random() * 3)],
-      paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-      collectedBy: collectors[Math.floor(Math.random() * collectors.length)],
+      amount: [500, 1000, 2000][Math.floor(seededRandom() * 3)],
+      paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
+      collectedBy: collectors[Math.floor(seededRandom() * collectors.length)],
       type: "income",
     })
   }
