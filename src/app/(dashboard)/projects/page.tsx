@@ -509,14 +509,10 @@ export default function ProjectsPage() {
 
                         {/* Actions */}
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
+                          <DropdownMenuTrigger
+                            className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded-lg hover:bg-accent outline-none"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36">
                             <DropdownMenuItem onClick={() => openEdit(project)}>
