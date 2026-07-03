@@ -200,7 +200,7 @@ export function Topbar() {
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-52" align="end" forceMount>
+            <DropdownMenuContent className="w-52" align="end">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-0.5">
                   <p className="text-sm font-medium">Admin User</p>

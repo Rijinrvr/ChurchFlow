@@ -4,6 +4,22 @@ import { CategoryType, PaymentMethodType } from "./utils"
 // TYPES
 // ============================================
 
+export interface Project {
+  id: string
+  name: string
+  description: string
+  status: "active" | "completed" | "on-hold"
+  priority: "low" | "medium" | "high"
+  budget: number
+  spent: number
+  progress: number
+  startDate: string
+  endDate: string
+  lead: string
+  tags: string[]
+  createdAt: string
+}
+
 export interface Family {
   id: string
   familyNo: number
@@ -45,6 +61,96 @@ export interface Transaction {
   collectedBy: string
   type: "income" | "expense"
   notes?: string
+  projectId?: string
+}
+
+// ============================================
+// PROJECTS SEED & HELPERS
+// ============================================
+
+export const INITIAL_PROJECTS: Project[] = [
+  {
+    id: "p1",
+    name: "Church Hall Renovation",
+    description:
+      "Complete renovation of the main church hall including flooring, walls, ceiling and lighting fixtures.",
+    status: "active",
+    priority: "high",
+    budget: 500000,
+    spent: 175000,
+    progress: 35,
+    startDate: "2026-01-01",
+    endDate: "2026-12-31",
+    lead: "Fr. Thomas",
+    tags: ["construction", "renovation"],
+    createdAt: "2026-01-01",
+  },
+  {
+    id: "p2",
+    name: "Parish Hall Construction",
+    description:
+      "Construction of a new multipurpose parish hall for community events, gatherings and celebrations.",
+    status: "active",
+    priority: "high",
+    budget: 1200000,
+    spent: 240000,
+    progress: 20,
+    startDate: "2026-03-01",
+    endDate: "2027-06-30",
+    lead: "Deacon Samuel",
+    tags: ["construction", "community"],
+    createdAt: "2026-03-01",
+  },
+  {
+    id: "p3",
+    name: "Sound System Upgrade",
+    description:
+      "Installation of a modern audio-visual system in the church for an enhanced worship experience.",
+    status: "completed",
+    priority: "medium",
+    budget: 85000,
+    spent: 82000,
+    progress: 100,
+    startDate: "2025-06-01",
+    endDate: "2025-09-30",
+    lead: "Admin",
+    tags: ["equipment", "technology"],
+    createdAt: "2025-06-01",
+  },
+  {
+    id: "p4",
+    name: "Garden & Landscaping",
+    description:
+      "Beautification of church grounds with plants, pathways, outdoor seating and lighting.",
+    status: "on-hold",
+    priority: "low",
+    budget: 45000,
+    spent: 8000,
+    progress: 18,
+    startDate: "2026-02-01",
+    endDate: "2026-08-31",
+    lead: "Fr. Joseph",
+    tags: ["landscaping", "outdoor"],
+    createdAt: "2026-02-01",
+  },
+]
+
+const STORAGE_KEY = "churchflow_projects"
+
+export function loadProjects(): Project[] {
+  if (typeof window === "undefined") return INITIAL_PROJECTS
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as Project[]) : INITIAL_PROJECTS
+  } catch {
+    return INITIAL_PROJECTS
+  }
+}
+
+export function saveProjects(projects: Project[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
+  } catch {}
 }
 
 export interface Receipt {
@@ -406,6 +512,16 @@ function generateTransactions(): Transaction[] {
     const head = family.members[0]
     if (!head) continue
     receiptCounter++
+    const projectIds = ["p1", "p2", "p3", "p4"]
+    const projectId = projectIds[i % projectIds.length]
+    const projectNames = [
+      "Church Hall Renovation",
+      "Parish Hall Construction",
+      "Sound System Upgrade",
+      "Garden & Landscaping",
+    ]
+    const projectName = projectNames[i % projectNames.length]
+
     transactions.push({
       id: `t-project-${i}`,
       date: randomDate(oneYearAgo, now),
@@ -416,11 +532,12 @@ function generateTransactions(): Transaction[] {
       houseName: family.houseName,
       memberId: head.id,
       memberName: head.name,
-      description: "New Church Building Fund",
+      description: `Contribution for ${projectName}`,
       amount: [1000, 2000, 5000, 10000, 25000][Math.floor(seededRandom() * 5)],
       paymentMethod: paymentMethods[Math.floor(seededRandom() * paymentMethods.length)],
       collectedBy: collectors[Math.floor(seededRandom() * collectors.length)],
       type: "income",
+      projectId,
     })
   }
 

@@ -36,7 +36,7 @@ import { useData } from "@/lib/data-context"
 import { CATEGORIES, PAYMENT_METHODS, generateReceiptNo, cn } from "@/lib/utils"
 import type { CategoryType, PaymentMethodType } from "@/lib/utils"
 
-const formSchema = z.object({
+const baseSchema = z.object({
   category: z.string().min(1, "Category is required"),
   familyId: z.string().min(1, "Family is required"),
   memberId: z.string().optional(),
@@ -45,9 +45,20 @@ const formSchema = z.object({
   paymentMethod: z.string().min(1, "Payment method is required"),
   date: z.date(),
   notes: z.string().optional(),
+  projectId: z.string().optional(),
 })
 
-type FormValues = z.infer<typeof formSchema>
+const formSchema = baseSchema.superRefine((val, ctx) => {
+  if (val.category === "new-project" && !val.projectId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Project is required",
+      path: ["projectId"],
+    })
+  }
+})
+
+type FormValues = z.infer<typeof baseSchema>
 
 interface AddIncomeDialogProps {
   open: boolean
@@ -55,11 +66,11 @@ interface AddIncomeDialogProps {
 }
 
 export function AddIncomeDialog({ open, onOpenChange }: AddIncomeDialogProps) {
-  const { families, addTransaction } = useData()
+  const { families, addTransaction, projects } = useData()
   const [receiptNo] = useState(generateReceiptNo())
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       category: "",
       familyId: "",
@@ -69,6 +80,7 @@ export function AddIncomeDialog({ open, onOpenChange }: AddIncomeDialogProps) {
       paymentMethod: "cash",
       date: new Date(),
       notes: "",
+      projectId: "",
     },
   })
 
@@ -86,6 +98,7 @@ export function AddIncomeDialog({ open, onOpenChange }: AddIncomeDialogProps) {
       type: "income",
       notes: data.notes,
       date: format(data.date, "yyyy-MM-dd"),
+      projectId: data.projectId || undefined,
     })
 
     toast.success("Income added successfully!", {
@@ -141,6 +154,41 @@ export function AddIncomeDialog({ open, onOpenChange }: AddIncomeDialogProps) {
               <p className="text-xs text-destructive">{form.formState.errors.category.message}</p>
             )}
           </div>
+
+          {/* Project (Conditional on Category is New Project) */}
+          {form.watch("category") === "new-project" && (
+            <div className="space-y-2 animate-in fade-in-50 duration-200">
+              <Label htmlFor="projectId">Project *</Label>
+              <Select
+                value={form.watch("projectId") || ""}
+                onValueChange={(v) => {
+                  form.setValue("projectId", v ?? undefined)
+                  if (v) {
+                    const proj = projects.find((p) => p.id === v)
+                    if (proj) {
+                      form.setValue("description", `Contribution for ${proj.name}`)
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger id="projectId">
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((proj) => (
+                    <SelectItem key={proj.id} value={proj.id}>
+                      {proj.name} ({proj.status})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.formState.errors.projectId && (
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.projectId.message}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Family & Member */}
           <div className="grid grid-cols-2 gap-4">
@@ -263,7 +311,6 @@ export function AddIncomeDialog({ open, onOpenChange }: AddIncomeDialogProps) {
                     mode="single"
                     selected={form.watch("date")}
                     onSelect={(date) => date && form.setValue("date", date)}
-                    initialFocus
                   />
                 </PopoverContent>
               </Popover>

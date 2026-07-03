@@ -275,26 +275,27 @@ export function AppSidebar() {
 
         {/* User profile with dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div
-              role="button"
-              tabIndex={0}
-              className={cn(
-                "flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/60 cursor-pointer w-full text-left",
-                "group-data-[collapsible=icon]:justify-center"
-              )}
-            >
-              <Avatar className="h-7 w-7 shrink-0">
-                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-xs font-bold">
-                  AD
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
-                <span className="text-sm font-medium leading-tight truncate">Admin</span>
-                <span className="text-[10px] text-muted-foreground leading-tight truncate">
-                  admin@church.org
-                </span>
-              </div>
+          <DropdownMenuTrigger
+            render={
+              <button
+                type="button"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/60 cursor-pointer w-full text-left",
+                  "group-data-[collapsible=icon]:justify-center"
+                )}
+              />
+            }
+          >
+            <Avatar className="h-7 w-7 shrink-0">
+              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-xs font-bold">
+                AD
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
+              <span className="text-sm font-medium leading-tight truncate">Admin</span>
+              <span className="text-[10px] text-muted-foreground leading-tight truncate">
+                admin@church.org
+              </span>
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-52 mb-1">

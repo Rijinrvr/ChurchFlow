@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useCallback } from "react"
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react"
 import {
   families as initialFamilies,
   members as initialMembers,
@@ -8,6 +8,9 @@ import {
   type Family,
   type Member,
   type Transaction,
+  type Project,
+  loadProjects,
+  saveProjects,
 } from "@/lib/data"
 import { generateReceiptNo } from "@/lib/utils"
 import type { CategoryType, PaymentMethodType } from "@/lib/utils"
@@ -16,6 +19,8 @@ interface DataContextType {
   families: Family[]
   members: Member[]
   transactions: Transaction[]
+  projects: Project[]
+  setProjects: React.Dispatch<React.SetStateAction<Project[]>>
   addTransaction: (data: {
     category: CategoryType
     familyId: string
@@ -26,6 +31,7 @@ interface DataContextType {
     type: "income" | "expense"
     notes?: string
     date?: string
+    projectId?: string
   }) => Transaction
   addFamily: (data: { headOfFamily: string; houseName: string; phone: string; address: string }) => Family
   addMember: (data: { name: string; familyId: string; phone: string; dob: string; gender: "male" | "female"; role: string }) => Member
@@ -37,6 +43,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [families, setFamilies] = useState<Family[]>(initialFamilies)
   const [members, setMembers] = useState<Member[]>(initialMembers)
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setProjects(loadProjects())
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (isMounted) {
+      saveProjects(projects)
+    }
+  }, [projects, isMounted])
 
   const addTransaction = useCallback(
     (data: {
@@ -49,6 +68,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       type: "income" | "expense"
       notes?: string
       date?: string
+      projectId?: string
     }) => {
       const family = families.find((f) => f.id === data.familyId)
       const member = data.memberId ? members.find((m) => m.id === data.memberId) : null
@@ -69,6 +89,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         collectedBy: "Admin",
         type: data.type,
         notes: data.notes,
+        projectId: data.projectId,
       }
       setTransactions((prev) => [newTransaction, ...prev])
       return newTransaction
@@ -120,7 +141,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <DataContext.Provider value={{ families, members, transactions, addTransaction, addFamily, addMember }}>
+    <DataContext.Provider value={{ families, members, transactions, projects, setProjects, addTransaction, addFamily, addMember }}>
       {children}
     </DataContext.Provider>
   )
