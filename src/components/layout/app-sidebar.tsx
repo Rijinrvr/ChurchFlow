@@ -118,7 +118,7 @@ function NavItem({
       className={cn(
         "group flex items-center gap-3 rounded-lg text-sm transition-all duration-150 relative",
         collapsed
-          ? "justify-center p-2 my-0"
+          ? "justify-center p-1.5 my-0"
           : "px-2.5 py-2 my-0.5",
         isActive
           ? "bg-primary/10 text-primary font-medium"
@@ -127,7 +127,8 @@ function NavItem({
     >
       <div
         className={cn(
-          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all duration-150",
+          "flex shrink-0 items-center justify-center rounded-md transition-all duration-150",
+          collapsed ? "h-6 w-6" : "h-7 w-7",
           isActive
             ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
             : "bg-muted group-hover:bg-accent"
@@ -284,7 +285,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       {/* ── Navigation ── */}
-      <SidebarContent className="py-2 gap-0">
+      <SidebarContent className="py-2 gap-0 overflow-y-auto">
         <div className={cn("flex flex-col", isCollapsed ? "gap-0" : "gap-3")}>
           {navGroups.map((group, i) => (
             <NavGroup key={i} group={group} pathname={pathname} />
