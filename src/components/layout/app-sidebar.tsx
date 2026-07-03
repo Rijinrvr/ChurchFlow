@@ -116,8 +116,10 @@ function NavItem({
       href={item.url}
       title={item.title}
       className={cn(
-        "group flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-all duration-150 my-0.5 relative",
-        collapsed ? "justify-center px-2" : "",
+        "group flex items-center gap-3 rounded-lg text-sm transition-all duration-150 relative",
+        collapsed
+          ? "justify-center p-2 my-0"
+          : "px-2.5 py-2 my-0.5",
         isActive
           ? "bg-primary/10 text-primary font-medium"
           : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -177,9 +179,8 @@ function NavGroup({
 
   if (isCollapsed) {
     return (
-      <div className="px-2 py-1">
-        {/* Section separator dot in collapsed mode */}
-        <div className="h-px bg-border/40 my-1 mx-1" />
+      <div className="px-2">
+        <div className="h-px bg-border/40 my-0.5 mx-1" />
         {group.items.map((item) => (
           <NavItem key={item.url} item={item} pathname={pathname} collapsed={true} />
         ))}
@@ -236,16 +237,31 @@ export function AppSidebar() {
     <Sidebar variant="sidebar" collapsible="icon">
       {/* ── Header / Logo + Hamburger ── */}
       <SidebarHeader className="border-b border-sidebar-border/60 px-3 py-3">
-        <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-3 justify-between")}>
-          {/* Logo */}
-          <Link
-            href="/"
-            className={cn("flex items-center gap-3 min-w-0", isCollapsed && "justify-center")}
-          >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/25">
+        {isCollapsed ? (
+          /* Collapsed: stack logo icon + hamburger vertically, centered */
+          <div className="flex flex-col items-center gap-2">
+            <Link
+              href="/"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/25"
+            >
               <Church className="h-5 w-5" />
-            </div>
-            {!isCollapsed && (
+            </Link>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title="Expand sidebar"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          /* Expanded: logo left + X button right */
+          <div className="flex items-center gap-3 justify-between">
+            <Link href="/" className="flex items-center gap-3 min-w-0">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/25">
+                <Church className="h-5 w-5" />
+              </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-bold tracking-tight leading-tight truncate">
                   ChurchFlow
@@ -254,11 +270,7 @@ export function AppSidebar() {
                   Management System
                 </span>
               </div>
-            )}
-          </Link>
-
-          {/* Hamburger collapse toggle — shown only when expanded */}
-          {!isCollapsed && (
+            </Link>
             <button
               type="button"
               onClick={toggleSidebar}
@@ -267,25 +279,13 @@ export function AppSidebar() {
             >
               <X className="h-4 w-4" />
             </button>
-          )}
-
-          {/* Expand button — shown only when collapsed, centered */}
-          {isCollapsed && (
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              title="Expand sidebar"
-              className="h-8 w-8 shrink-0 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors mt-2"
-            >
-              <Menu className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+          </div>
+        )}
       </SidebarHeader>
 
       {/* ── Navigation ── */}
-      <SidebarContent className="py-3 gap-0">
-        <div className="flex flex-col gap-3">
+      <SidebarContent className="py-2 gap-0">
+        <div className={cn("flex flex-col", isCollapsed ? "gap-0" : "gap-3")}>
           {navGroups.map((group, i) => (
             <NavGroup key={i} group={group} pathname={pathname} />
           ))}
